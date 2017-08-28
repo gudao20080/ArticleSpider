@@ -1,24 +1,31 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from scrapy.loader import ItemLoader
-
-from ArticleSpider.items import TestItem
+import re
 
 
 class JobboleSpider(scrapy.Spider):
     name = 'jobbole'
     allowed_domains = ['blog.jobbole.com']
-    start_urls = ['http://blog.jobbole.com/']
+    start_urls = ['http://blog.jobbole.com/110287/']
+
+
+
 
     def parse(self, response):
-        l = ItemLoader(item=TestItem(), response=response)
-        l.add_xpath("id", '//div[@class="product_name"]')
-        l.add_css("stock", 'p#stock')
+        bookmark_str = response.css('.bookmark-btn::text').extract_first()
+        bookmark_num = self.filterNum(bookmark_str) #收藏
+        comment = response.css(".post-adds a span::text").extract_first()
 
-        return l.load_item()
+        praise_num = response.css(".vote-post-up h10::text").extract_first()    #赞
+        comment_num = self.filterNum(comment)   #评论数
 
-    def start_requests(self):
+        return bookmark_num;
 
+    def filterNum(self, s: str):
+        rex = '.*?(\d+).*'
+        match_result = re.match(rex, s)
+        if match_result:
+            num = match_result.group(1)
+            return num
 
-        yield scrapy.Request("ddd", callback=self.parse)
-        return super().start_requests()
+        return 0
