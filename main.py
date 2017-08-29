@@ -9,8 +9,8 @@ sys.path.append(dirname)
 execute(["scrapy", "crawl", "jobbole"])
 
 # import re
-# s = ' 24 收藏'
-# rex = '.*?(\d+).*'
+# s = 'http://blog.jobbole.com/112281/'
+# rex = r".*?(\d{1,}).*"
 # re_match = re.match(rex, s)
 # if re_match:
 #     num = re_match.group(1)
