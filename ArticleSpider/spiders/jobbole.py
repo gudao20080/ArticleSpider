@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
-import scrapy
+from scrapy.loader import ItemLoader
 import re
-from ArticleSpider import items
-
-from urllib import parse
 import time
+from _datetime import datetime
+from urllib import parse
+from scrapy.loader.processors import TakeFirst
+import scrapy
+
+from ArticleSpider import items
 
 
 class JobboleSpider(scrapy.Spider):
@@ -44,41 +47,21 @@ class JobboleSpider(scrapy.Spider):
         :param response:
         :return:
         """
-        # 提取文章的具体字段
-        bookmark_str = response.css('.bookmark-btn::text').extract_first()
-        bookmark_num = self.capture_num(bookmark_str)  # 收藏
-        comment = response.css(".post-adds a span::text").extract_first()
+        item_loader = JobBoleArticleLoader(item=items.JobBoleArticleItem(), response=response)
+        item_loader.add_css("title", ".entry-header h1::text")
+        item_loader.add_css("create_date", ".entry-meta-hide-on-mobile::text")
+        item_loader.add_value("url", response.url)
+        item_loader.add_value("front_image_url", [parse.urljoin(response.url, response.meta["front_image_path"])])
+        item_loader.add_css("praise_nums", ".vote-post-up h10::text")
+        item_loader.add_css("comment_nums", ".post-adds a span::text")
+        item_loader.add_css("fav_nums", ".bookmark-btn::text")
+        item_loader.add_css("tags", ".entry-meta-hide-on-mobile a::text")
+        item_loader.add_css("content", ".entry")
+        item_loader.add_value("url_object_id", response.url)
 
-        praise_num = response.css(".vote-post-up h10::text").extract_first(default=0)  # 赞
-        comment_num = self.capture_num(comment)  # 评论数
+        item = item_loader.load_item()
+        return item
 
-        front_image_url = response.meta["front_image_path"]
-        title = response.css(".entry-header h1::text").extract_first()
-        date_str = response.css(".entry-meta-hide-on-mobile::text").extract_first().strip()
-        match_result = re.match(r".*?(\d{1,}/\d{1,}/\d{1,}).*", date_str)
-        if match_result:
-            date_str = match_result.group(1)
-        else:
-            date_str = time.strftime("%Y/%m/%d", time.localtime())
 
-        tag_list = response.css(".entry-meta-hide-on-mobile a::text").extract()
-
-        id_rex = r".*?(\d{1,}).*"
-        id_match_result = re.match(id_rex, response.url)
-        url_object_id = 0
-        if id_match_result:
-            url_object_id = int(id_match_result.group(1))
-
-        article_item = items.ArticleItem()
-        article_item['title'] = title
-        article_item['create_date'] = date_str
-        article_item["url"] = response.url
-        article_item["front_image_path"] = front_image_url
-        article_item["front_image_url"] = parse.urljoin(response.url, front_image_url)
-        article_item["praise_nums"] = praise_num
-        article_item["comment_nums"] = comment_num
-        article_item["fav_nums"] = bookmark_num
-        article_item["tags"] = ",".join(tag_list)
-        article_item["content"] = response.css(".entry").extract_first()
-        article_item["url_object_id"] = url_object_id
-        return article_item
+class JobBoleArticleLoader(ItemLoader):
+    default_output_processor = TakeFirst()
