@@ -62,6 +62,7 @@ class JobboleSpider(scrapy.Spider):
         item = item_loader.load_item()
         return item
 
-
+from scrapy.loader.processors import MapCompose
 class JobBoleArticleLoader(ItemLoader):
     default_output_processor = TakeFirst()
+    title_in = MapCompose(lambda x: x + "wangkai")
