@@ -8,8 +8,6 @@ import time
 session = requests.session()
 session.cookies = cookielib.LWPCookieJar(filename="cookies.txt")
 
-
-
 agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36"
 
 header = {
@@ -84,7 +82,7 @@ def is_login():
 
 
 def getcaptcha():
-    captcha_url = "https://www.zhihu.com/captcha.gif?r=%d&type=login"% (time.time() * 1000)
+    captcha_url = "https://www.zhihu.com/captcha.gif?r=%d&type=login" % (time.time() * 1000)
     img = session.get(captcha_url, headers=header).content
     with open("captcha.gif", "wb") as f:
         f.write(img)
