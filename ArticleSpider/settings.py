@@ -107,3 +107,10 @@ MYSQL_HOST = "localhost"
 MYSQL_DBNAME = "article"
 MYSQL_USER = "root"
 MYSQL_PASSWORD = ""
+import os
+import sys
+
+root_dir = os.path.dirname(project_dir)
+root = os.path.join(root_dir, "ArticleSpider")
+sys.path.insert(0, root)
+print(root)
